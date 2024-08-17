@@ -3,15 +3,22 @@ package com.example.fireapp.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,8 +30,8 @@ import com.example.fireapp.R
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController,
-    state: AppState,
+    state:  AppState,
+    onLoginClicked: ()->Unit ={}
 ) {
     Scaffold {
         Box(
@@ -36,21 +43,49 @@ fun LoginScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedButton(onClick = {},modifier=Modifier.size(150.dp)){
-                    Image(painter = painterResource(id = R.drawable.googlelogo), contentDescription = null)
+                Image(
+                    painter = painterResource(id = R.drawable.googlelogo),
+                    contentDescription = null,
+                    modifier = Modifier.size(70.dp)
+                )
+                Spacer(modifier = Modifier.padding(16.dp))
+                Text(
+                    text = "Welcome to FieryApp",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Spacer(modifier = Modifier.padding(16.dp))
+                if (state.loginStatus==LoginStatus.IN_PROGRESS){
+                    CircularProgressIndicator()
+                }else{
+                OutlinedButton(onClick = onLoginClicked,modifier=Modifier.width(200.dp)){
+                    Text(text = "Login with Google")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Image(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+                    )
+                }
+                }
+
+            }
+            Image(
+                painter = painterResource(id = R.drawable.sword),
+                contentDescription = null,
+                modifier = Modifier.align(Alignment.BottomCenter).size(250.dp)
+            )
+        }
+    }
 
 
                 }
-                Text(text = "Submit",) }
-        }
 
-    }
-}
+
 
 
 
 @Preview
 @Composable
 private fun LoginScreenPreview() {
-    LoginScreen(navController = rememberNavController(), state =AppState() )
+    LoginScreen( state =AppState() )
 }

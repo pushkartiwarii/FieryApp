@@ -6,6 +6,7 @@ import android.content.IntentSender
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import com.example.fireapp.R
+import com.example.fireapp.R.string.default_web_client_id
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.Firebase
@@ -17,15 +18,47 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 
-enum class LoginStatus{
+enum class LoginStatus {
     LOGGED_IN,
+    IN_PROGRESS,
     LOGGED_OUT,
-    IN_PROGRESS
+    FAILED,
 }
+
 data class AppState(
     val loginStatus: LoginStatus = LoginStatus.LOGGED_OUT,
     val errorMessage: String = "",
 )
+
+class AppViewModel() : ViewModel() {
+    private val _appState = MutableStateFlow(AppState())
+    val appState = _appState.asStateFlow()
+
+    fun onSignInResult(signInResult: SignInResult) {
+        if (signInResult.error != null) {
+            _appState.value = AppState(
+                loginStatus = LoginStatus.FAILED,
+                errorMessage = signInResult.error.message ?: "Unknown error"
+            )
+        } else {
+            _appState.value = AppState(
+                loginStatus = LoginStatus.LOGGED_IN,
+                errorMessage = ""
+            )
+        }
+    }
+
+    fun resetState(){
+        _appState.value = AppState()
+    }
+
+    fun setSignInInProgress() {
+        _appState.value = AppState(
+            loginStatus = LoginStatus.IN_PROGRESS,
+            errorMessage = ""
+        )
+    }
+}
 
 data class SignInResult(
     val data: UserData?,
@@ -37,21 +70,6 @@ data class UserData(
     val email: String?,
     val photoUrl: String?,
 )
-
-class AppViewModel() : ViewModel() {
-    private val _appState = MutableStateFlow(AppState())
-    val appState = _appState.asStateFlow()
-
-    init {
-
-    }
-
-    private fun login() {
-        _appState.value = AppState(
-            loginStatus = LoginStatus.IN_PROGRESS
-        )
-    }
-}
 
 class GoogleAuthUiClient(
     private val context: Context,
@@ -67,7 +85,7 @@ class GoogleAuthUiClient(
                         BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                             .setSupported(true)
                             .setFilterByAuthorizedAccounts(false)
-                            .setServerClientId(context.getString(R.string.default_web_client_id))
+                            .setServerClientId(context.getString(default_web_client_id))
                             .build()
                     )
                     .setAutoSelectEnabled(true)
@@ -114,6 +132,17 @@ class GoogleAuthUiClient(
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
+        }
+    }
+
+    fun getSignedInUser(): UserData?{
+        val user = auth.currentUser
+        return user?.let {
+            UserData(
+                uid = it.uid,
+                email = user.email,
+                photoUrl = user.photoUrl.toString()
+            )
         }
     }
 }
