@@ -106,7 +106,8 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             modifier = Modifier,
                             state = state,
-                            userData = googleSingInClient.getSignedInUser()
+                            userData = googleSingInClient.getSignedInUser(),
+                            onEvent = vm::onChatEvent,
                         ){
                             lifecycleScope.launch {
                                 googleSingInClient.signOut()
